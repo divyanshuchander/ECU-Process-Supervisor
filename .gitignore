@@ -1,0 +1,11 @@
+build/
+*.o
+*.d
+supervisor
+camera_service
+radar_service
+lane_service
+object_service
+diagnostics_service
+logs/supervisor.log
+docs/
