@@ -28,8 +28,8 @@ make
 make clean
 ```
 
-All build artifacts are placed under `build/`. The build produces
-`build/supervisor` and one executable for each dummy service.
+All build artifacts are placed under `build/`. The supervisor is built as
+`build/supervisor`, and the dummy services are built under `build/services/`.
 
 ## Service configuration
 
@@ -44,9 +44,9 @@ The loader rejects malformed lines, duplicate service names, and negative
 restart limits. Configuration errors stop startup rather than allowing a
 partially loaded service list to run.
 
-The dummy services only print an `Alive` message in an infinite `while` loop
-every two seconds. They do not perform any ADAS processing and are intended
-only as child processes for the supervisor.
+The dummy services run silent infinite `while` loops with `sleep()`. They do
+not perform any ADAS processing and are intended only as child processes for
+the supervisor, so their output does not interfere with the dashboard.
 
 The current implementation also monitors child exits, restarts services up to
 their configured limit, and handles `SIGINT` and `SIGTERM` for graceful

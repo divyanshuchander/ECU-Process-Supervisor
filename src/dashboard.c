@@ -14,13 +14,25 @@ static const char *status_name(ServiceStatus status)
 
 void dashboard_display(Service *services, int total_crashes)
 {
+    static int first_display = 1;
+    static int previous_lines;
     int total_services = 0;
     int total_restarts = 0;
     Service *unstable_service = NULL;
 
-    printf("\n-------------------------------------------------------------\n");
-    printf("SERVICE              PID STATUS  RESTARTS HEALTH UPTIME\n");
-    printf("-------------------------------------------------------------\n");
+    if (first_display)
+    {
+        printf("-------------------------------------------------------------\n");
+        printf("SERVICE              PID STATUS  RESTARTS HEALTH UPTIME\n");
+        printf("-------------------------------------------------------------\n");
+        first_display = 0;
+    }
+    else
+    {
+        printf("\033[%dA", previous_lines);
+    }
+
+    printf("\033[J");
 
     for (Service *service = services; service != NULL; service = service->next)
     {
@@ -31,8 +43,9 @@ void dashboard_display(Service *services, int total_crashes)
             health = 0;
         if (service->status == SERVICE_RUNNING)
             uptime = time(NULL) - service->start_time;
-        if (unstable_service == NULL ||
-            service->restart_count > unstable_service->restart_count)
+        if (service->restart_count > 0 &&
+            (unstable_service == NULL ||
+             service->restart_count > unstable_service->restart_count))
             unstable_service = service;
 
         printf("%-20s %-4ld %-7s %-8d %3d%%   %02ld:%02ld:%02ld\n",
@@ -49,4 +62,6 @@ void dashboard_display(Service *services, int total_crashes)
     printf("Total Restarts : %d\n", total_restarts);
     printf("Most Unstable  : %s\n",
            unstable_service == NULL ? "None" : unstable_service->name);
+    previous_lines = total_services + 5;
+    fflush(stdout);
 }

@@ -1,6 +1,5 @@
 build/
 *.o
-*.d
 supervisor
 camera_service
 radar_service
