@@ -26,10 +26,22 @@ The project uses GCC and GNU Make:
 ```sh
 make
 make clean
+make misra-compile
+make valgrind-check
+make cppcheck
+make gtest
 ```
 
-All build artifacts are placed under `build/`. The supervisor is built as
+Normal build artifacts are placed under `build/`. The supervisor is built as
 `build/supervisor`, and the dummy services are built under `build/services/`.
+`make misra-compile` builds the same targets under `build-misra/` with
+additional MISRA-oriented GCC diagnostics enabled, including conversion,
+control-flow, declaration, and qualifier warnings.
+`make valgrind-check` runs the supervisor for a short, bounded interval with
+child-process tracing and full leak checking enabled.
+`make cppcheck` runs static analysis on all supervisor and service sources.
+`make gtest` builds and runs the GoogleTest suite in `gtest/`. It requires
+GoogleTest development libraries, such as the Linux `libgtest-dev` package.
 
 ## Service configuration
 

@@ -1,4 +1,5 @@
 build/
+build-misra/
 *.o
 supervisor
 camera_service

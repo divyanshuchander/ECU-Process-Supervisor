@@ -13,7 +13,11 @@ int config_load(const char *path, Service **services)
         return -1;
     }
 
-    Service *last = NULL;
+    Service *last = *services;
+    while (last != NULL && last->next != NULL)
+    {
+        last = last->next;
+    }
     char line[512];
     unsigned int line_number = 0;
 
