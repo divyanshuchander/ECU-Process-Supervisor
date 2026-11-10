@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <ctime>
 #include <string>
 
 extern "C" {
@@ -29,4 +30,41 @@ TEST(DashboardTest, DisplaysServiceSummary)
     EXPECT_NE(output.find("Total Services : 1"), std::string::npos);
     EXPECT_NE(output.find("Total Crashes  : 3"), std::string::npos);
     EXPECT_NE(output.find("Most Unstable  : Camera"), std::string::npos);
+}
+
+TEST(DashboardTest, DisplaysRunningAndStoppedServices)
+{
+    Service running{};
+    Service stopped{};
+    running.name[0] = 'R';
+    running.name[1] = '\0';
+    stopped.name[0] = 'S';
+    stopped.name[1] = '\0';
+    running.pid = 10;
+    running.status = SERVICE_RUNNING;
+    running.restart_count = 6;
+    running.start_time = time(nullptr) - 3661;
+    stopped.pid = -1;
+    stopped.status = SERVICE_STOPPED;
+    stopped.restart_count = 0;
+    running.next = &stopped;
+
+    testing::internal::CaptureStdout();
+    dashboard_display(&running, 0);
+    const std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_NE(output.find("RUNNING"), std::string::npos);
+    EXPECT_NE(output.find("STOPPED"), std::string::npos);
+    EXPECT_NE(output.find("  0%"), std::string::npos);
+    EXPECT_NE(output.find("Most Unstable  : R"), std::string::npos);
+}
+
+TEST(DashboardTest, DisplaysEmptyServiceList)
+{
+    testing::internal::CaptureStdout();
+    dashboard_display(nullptr, 0);
+    const std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_NE(output.find("Total Services : 0"), std::string::npos);
+    EXPECT_NE(output.find("Most Unstable  : None"), std::string::npos);
 }

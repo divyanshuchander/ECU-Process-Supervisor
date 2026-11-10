@@ -3,24 +3,10 @@ CXX := g++
 CFLAGS := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -Iinclude
 BUILD_DIR := build
 MISRA_BUILD_DIR := build-misra
-MISRA_CFLAGS := \
-	-Werror \
-	-Wconversion \
-	-Wsign-conversion \
-	-Wshadow \
-	-Wstrict-prototypes \
-	-Wmissing-prototypes \
-	-Wold-style-definition \
-	-Wundef \
-	-Wswitch-enum \
-	-Wcast-qual \
-	-Wpointer-arith \
-	-Wformat=2 \
-	-Wnull-dereference \
-	-Wdouble-promotion \
-	-Wvla \
-	-Wfloat-equal \
-	-fanalyzer
+COVERAGE_BUILD_DIR := build-coverage
+MISRA_CFLAGS := -Werror -Wconversion -Wsign-conversion -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wundef -Wswitch-enum -Wcast-qual -Wpointer-arith -Wformat=2 -Wnull-dereference -Wdouble-promotion -Wvla -Wfloat-equal -fanalyzer
+COVERAGE_CFLAGS := $(CFLAGS) --coverage
+COVERAGE_CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -Iinclude --coverage
 
 SUPERVISOR_SOURCES := \
 	src/main.c \
@@ -38,11 +24,14 @@ GTEST_SOURCES := \
 	gtest/config_test.cpp \
 	gtest/logger_test.cpp \
 	gtest/launcher_test.cpp \
-	gtest/dashboard_test.cpp
-GTEST_C_SOURCES := src/config.c src/logger.c src/launcher.c src/dashboard.c
+	gtest/dashboard_test.cpp \
+	gtest/monitor_test.cpp
+GTEST_C_SOURCES := src/config.c src/logger.c src/launcher.c src/dashboard.c src/monitor.c
 GTEST_OBJECTS := $(GTEST_C_SOURCES:src/%.c=$(BUILD_DIR)/gtest/%.o)
+COVERAGE_GTEST_OBJECTS := $(GTEST_C_SOURCES:src/%.c=$(COVERAGE_BUILD_DIR)/gtest/%.o)
+COVERAGE_TEST := $(COVERAGE_BUILD_DIR)/gtest/tests
 
-.PHONY: all clean misra-compile valgrind-check cppcheck gtest
+.PHONY: all clean clean-coverage coverage misra-compile valgrind-check cppcheck gtest
 
 all: $(BUILD_DIR)/supervisor $(addprefix $(BUILD_DIR)/services/,$(SERVICE_TARGETS))
 
@@ -58,14 +47,30 @@ cppcheck:
 gtest: $(BUILD_DIR)/gtest/tests
 	./$(BUILD_DIR)/gtest/tests
 
+coverage: $(COVERAGE_TEST)
+	./$(COVERAGE_TEST)
+	@for source in $(GTEST_C_SOURCES); do \
+		gcov -b -c -o $(COVERAGE_BUILD_DIR)/gtest $$source; \
+	done
+
 $(BUILD_DIR)/gtest/tests: $(GTEST_SOURCES) $(GTEST_OBJECTS) | $(BUILD_DIR)/gtest
 	$(CXX) -std=c++17 -Wall -Wextra -Wpedantic -Iinclude $^ \
+		-lgtest -lgtest_main -pthread -o $@
+
+$(COVERAGE_TEST): $(GTEST_SOURCES) $(COVERAGE_GTEST_OBJECTS) | $(COVERAGE_BUILD_DIR)/gtest
+	$(CXX) $(COVERAGE_CXXFLAGS) $^ \
 		-lgtest -lgtest_main -pthread -o $@
 
 $(BUILD_DIR)/gtest/%.o: src/%.c | $(BUILD_DIR)/gtest
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(COVERAGE_BUILD_DIR)/gtest/%.o: src/%.c | $(COVERAGE_BUILD_DIR)/gtest
+	$(CC) $(COVERAGE_CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/gtest:
+	mkdir -p $@
+
+$(COVERAGE_BUILD_DIR)/gtest:
 	mkdir -p $@
 
 valgrind-check: all
@@ -93,3 +98,7 @@ $(BUILD_DIR)/%.o: %.c
 clean:
 	$(RM) -r $(BUILD_DIR) $(MISRA_BUILD_DIR)
 	$(RM) logs/supervisor.log
+
+clean-coverage:
+	$(RM) -r $(COVERAGE_BUILD_DIR)
+	$(RM) config.c.gcov dashboard.c.gcov launcher.c.gcov logger.c.gcov monitor.c.gcov

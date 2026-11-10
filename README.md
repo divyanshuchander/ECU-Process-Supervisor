@@ -30,6 +30,7 @@ make misra-compile
 make valgrind-check
 make cppcheck
 make gtest
+make coverage
 ```
 
 Normal build artifacts are placed under `build/`. The supervisor is built as
@@ -42,6 +43,9 @@ child-process tracing and full leak checking enabled.
 `make cppcheck` runs static analysis on all supervisor and service sources.
 `make gtest` builds and runs the GoogleTest suite in `gtest/`. It requires
 GoogleTest development libraries, such as the Linux `libgtest-dev` package.
+`make coverage` rebuilds the tested C modules with GCC `--coverage`, runs the
+GoogleTest suite, and prints gcov line and branch coverage. Coverage artifacts
+are placed under `build-coverage/`; remove them with `make clean-coverage`.
 
 ## Service configuration
 

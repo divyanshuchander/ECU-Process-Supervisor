@@ -47,4 +47,9 @@ TEST_F(LoggerTest, RejectsNullArguments)
     EXPECT_EQ(logger_log(stdout, nullptr), -1);
 }
 
+TEST_F(LoggerTest, ClosesNullLog)
+{
+    logger_close(nullptr);
+}
+
 }  // namespace

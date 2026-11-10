@@ -69,6 +69,15 @@ TEST_F(ConfigTest, RejectsInvalidConfiguration)
     EXPECT_EQ(services, nullptr);
 }
 
+TEST_F(ConfigTest, RejectsMalformedConfiguration)
+{
+    WriteConfig("CameraService ./camera\n");
+    Service *services = nullptr;
+
+    EXPECT_EQ(config_load(test_config_path, &services), -1);
+    EXPECT_EQ(services, nullptr);
+}
+
 TEST_F(ConfigTest, RejectsDuplicateServices)
 {
     WriteConfig("CameraService ./camera 3\nCameraService ./other 1\n");
