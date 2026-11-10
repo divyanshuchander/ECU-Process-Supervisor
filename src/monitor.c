@@ -3,7 +3,7 @@
 #include "launcher.h"
 #include "logger.h"
 #include "dashboard.h"
-
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/wait.h>
@@ -54,6 +54,13 @@ static void check_children(Service *services, FILE *log_file, int *total_crashes
         }
         if (result < 0)
         {
+            if(errno == EINTR){
+                continue;
+            }
+            if(errno == ECHILD){
+                service->pid = -1;
+                service->status = SERVICE_FAILED;
+            }
             continue;
         }
 
@@ -108,11 +115,8 @@ int monitor_run(Service *services, FILE *log_file)
 
     while (!shutdown_requested)
     {
-        if (child_finished)
-        {
-            child_finished = 0;
-            check_children(services, log_file, &total_crashes);
-        }
+        child_finished = 0;
+        check_children(services, log_file, &total_crashes);
         dashboard_display(services, total_crashes);
         sleep(1);
     }

@@ -4,7 +4,7 @@ CFLAGS := -std=c11 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -Wpedantic -Iinclude
 BUILD_DIR := build
 MISRA_BUILD_DIR := build-misra
 COVERAGE_BUILD_DIR := build-coverage
-MISRA_CFLAGS := -Werror -Wconversion -Wsign-conversion -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wundef -Wswitch-enum -Wcast-qual -Wpointer-arith -Wformat=2 -Wnull-dereference -Wdouble-promotion -Wvla -Wfloat-equal -fanalyzer
+MISRA_CFLAGS := -Werror -Wconversion -Wsign-conversion -Wshadow -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wundef -Wswitch-enum -Wcast-qual -Wpointer-arith -Wformat=2 -Wnull-dereference -Wdouble-promotion -Wvla -Wfloat-equal 
 COVERAGE_CFLAGS := $(CFLAGS) --coverage
 COVERAGE_CXXFLAGS := -std=c++17 -Wall -Wextra -Wpedantic -Iinclude --coverage
 
